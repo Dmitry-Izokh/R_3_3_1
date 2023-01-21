@@ -41,16 +41,16 @@ namespace R_3_3_1
             return Result.Succeeded;
         }
     } */
-    
-    public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
-    {
 
-        UIApplication uiapp = commandData.Application;
-        UIDocument uidoc = uiapp.ActiveUIDocument;
-        Document doc = uidoc.Document;
+        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        {
+
+            UIApplication uiapp = commandData.Application;
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Document doc = uidoc.Document;
 
             IList<Reference> selectedElementRefList = null;
-           try
+            try
             {
                 selectedElementRefList = uidoc.Selection.PickObjects(ObjectType.Face, "Выберете элемент");
                 var wallList = new List<Wall>();
@@ -65,21 +65,30 @@ namespace R_3_3_1
                 }
                 foreach (Wall oWall in wallList)
                 {
-                    Parameter lengthParametr = oWall.get_Parameter(BuiltInParameter.HOST_VOLUME_COMPUTED);
-                    if (lengthParametr.StorageType == StorageType.Double)
+                    Parameter volumeParametr = oWall.get_Parameter(BuiltInParameter.HOST_VOLUME_COMPUTED);
+                    List<double> volumeSelectedWallList = null;
+                    double volumeSelectedWall;                    
+                    
+                    if (volumeParametr.StorageType == StorageType.Double)
                     {
-                        TaskDialog.Show("Length", lengthParametr.AsDouble().ToString());
+                        volumeSelectedWall= volumeParametr.AsDouble();
+                        volumeSelectedWallList.Add(volumeSelectedWall);
+                        double sumVolume = volumeSelectedWallList.ToArray().Sum();
+                        TaskDialog.Show("Суммарный объем", $"{sumVolume}");
+                        //TaskDialog.Show("Length", volumeParametr.AsDouble().ToString());
                     }
+                    
                 }
             }
-            catch(Autodesk.Revit.Exceptions.OperationCanceledException)
+            catch (Autodesk.Revit.Exceptions.OperationCanceledException)
             { }
 
             if (selectedElementRefList == null)
             {
                 return Result.Cancelled;
-            }        
-        return Result.Succeeded;
+            }
+            return Result.Succeeded;
+        }
     }
 }
-}
+    
